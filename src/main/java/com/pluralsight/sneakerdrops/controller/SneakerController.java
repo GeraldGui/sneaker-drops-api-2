@@ -2,10 +2,7 @@ package com.pluralsight.sneakerdrops.controller;
 
 import com.pluralsight.sneakerdrops.models.Sneaker;
 import com.pluralsight.sneakerdrops.service.SneakerService;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,7 +18,17 @@ public class SneakerController {
     }
 
     @GetMapping
-    public List<Sneaker> getAll() {
-        return sneakerService.allSneakers();
+    public List<Sneaker> getAll(@RequestParam(required = false) Integer year,
+                                @RequestParam(required = false) String model,
+                                @RequestParam(required = false) Double minPrice,
+                                @RequestParam(required = false) Double maxPrice,
+                                @RequestParam(required = false) String brand,
+                                @RequestParam(required = false) String sort) {
+        return sneakerService.search(year, model, minPrice, maxPrice, brand, sort);
+    }
+
+    @GetMapping("/{id}")
+    public Sneaker getById(@PathVariable long id) {
+        return sneakerService.byId(id);
     }
 }

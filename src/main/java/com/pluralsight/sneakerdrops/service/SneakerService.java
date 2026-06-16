@@ -7,6 +7,8 @@ import com.pluralsight.sneakerdrops.models.Sneaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -20,32 +22,25 @@ public class SneakerService {
         this.sneakerRepository = sneakerRepository;
         this.brandRepository = brandRepository;
     }
-    public List<Sneaker> allSneakers() {
-        return sneakerRepository.findAll();
-    }
-
-    public List<Sneaker> byYear(int year) {
-        return sneakerRepository.findByReleaseYear(year);
-    }
-
-    public List<Sneaker> byModel(String model) {
-        return sneakerRepository.findByModelContaining(model);
-    }
-
-    public List<Sneaker> byMaxPrice(double price) {
-        return sneakerRepository.findByPriceLessThan(price);
-    }
-
-    public List<Sneaker> search(double maxPrice, int minYear) {
-        return sneakerRepository.search(maxPrice, minYear);
-    }
-
-    public List<Sneaker> byBrand(String brandName) {
-        return sneakerRepository.findByBrandNameContainingIgnoreCase(brandName);
-    }
 
     public Sneaker byId(long id) {
-        return sneakerRepository.findById(id).orElseThrow(() -> new NotFoundException("No sneaker with id " + id));
+        return sneakerRepository.findById(id).orElseThrow(null);
+    }
+
+    public List<Sneaker> search(Integer year, String model, Double minPrice ,Double maxPrice, String brand, String sort){
+        List<Sneaker> results = new ArrayList<>(sneakerRepository.findAll().stream()
+                .filter(s -> year == null || s.getReleaseYear() == year)
+                .filter(s -> model == null || s.getModel().equalsIgnoreCase(model))
+                .filter(s -> minPrice == null || s.getPrice() >= minPrice)
+                .filter(s -> maxPrice == null || s.getPrice() <= maxPrice)
+                .filter(s -> brand == null || s.getBrand().getName().equalsIgnoreCase(brand)).toList());
+
+        if ("price".equalsIgnoreCase(sort)) {
+            results.sort(Comparator.comparingDouble(Sneaker::getPrice).reversed());
+        } else if ("model".equalsIgnoreCase(sort)) {
+            results.sort(Comparator.comparing(Sneaker::getModel));
+        }
+        return results;
     }
 
     public Sneaker addSneaker(String model, int year, double price, long brandId) {
